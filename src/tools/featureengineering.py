@@ -21,158 +21,105 @@ def feature_engineereing(_df:pd.DataFrame)->pd.DataFrame:
     # Create a copy of input dataframe
     df = _df.copy()
 
-    # Feature: Number of bedrooms per unit area
-    df['nbedrooms_per_area'] = df['number_of_bedrooms'] / df['unit_area']
+    # Convert to datetime
+    df['Dt_Customer'] = pd.to_datetime(df['Dt_Customer'])
 
-    # Feature: down payment time to delivery percentage
-    df['downpayment_per_delivery_time'] = df['down_payment'] / df['time_to_delivery']
+    # Customer Age
+    df['Customer_Age'] = df['Dt_Customer'].dt.year - df['Year_Birth']
 
-    # Feature: Time to delivert per unit area
-    df['deliverytime_per_area'] = df['time_to_delivery'] / df['unit_area']
+    # Total Spending
 
-    # Feature: Average time_to_delivery for developers
-    df = calc_average_delivery_time(df, 'english_prop_type_name', 'developer_name')
+    # List of columns representing spending on different product categories
+    product_columns = ['MntWines', 'MntFruits', 'MntMeatProducts', 'MntFishProducts', 'MntSweetProducts', 'MntGoldProds']
 
-    # Feature: Average tiem_to_delivery for Area
-    df = calc_average_delivery_time(df, 'english_prop_type_name', 'english_area_name')
+    # Calculate the total spending for each customer
+    df['Total_Spending'] = df[product_columns].sum(axis=1)
 
-    # Feature: developer performance
-    df = calc_feature_performance(df, 'english_prop_type_name', 'developer_name')
+    # Total Purchases
 
-    # Feature: area performance
-    df = calc_feature_performance(df, 'english_prop_type_name', 'english_area_name')
+    # List of columns representing spending on different purchases channels
+    channels_columns = ['NumWebPurchases', 'NumCatalogPurchases', 'NumStorePurchases']
+                    
+    # Calculate the total spending for each customer
+    df['Total_Purchases'] = df[channels_columns].sum(axis=1)
 
-    # Feature: developer market share
-    df = calc_feature_market_share(df, 'english_prop_type_name', 'developer_name')
+    # Acceptance_Rate
 
-    # Feature: area market share
-    df = calc_feature_market_share(df, 'english_prop_type_name', 'english_area_name')
+    # List of columns representing accepted campaigns (Cmp1 to Cmp5)
+    accepted_campaign_columns = ['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5']
 
-    # Drop unsed columns
-    df.drop(['detailed_property_id'], axis=1, inplace=True)
-    
-    return df
+    # Calculate the total number of accepted campaigns for each customer
+    df['Total_Accepted_Campaigns'] = df[accepted_campaign_columns].sum(axis=1)
 
+    # Total number of marketing campaigns
+    total_campaigns = len(accepted_campaign_columns)
 
-def calc_average_delivery_time(_df:pd.DataFrame, target_col:str, feature_col:str)->pd.DataFrame:
-    """
-        Used to calculate the averate time_to_delivery for target_col per each input features.
+    # Calculate the acceptance rate for each customer
+    df['Acceptance_Rate'] = df['Total_Accepted_Campaigns'] / total_campaigns
 
-        PARAMETERS
-            _df: pandas dataframe, input dataframe.
-            target_col: str, represent the target to which we calculate the average time.
-            feature_col: str, represent the feature over which we calculate each average time.
+    # Channel_Preference
 
-        RETURN
-            pandas DataFrame with created features.
-    """
+    # Define the purchase channels
+    channels = {
+        'NumWebPurchases':'Web',
+        'NumStorePurchases':'Store',
+        'NumCatalogPurchases':'Catalog'
+    }
 
-    # Create a copy of input dataframe
-    df = _df.copy()
+    # Create a new column 'Channel_Preference' with the preferred channel for each customer
+    df['Channel_Preference'] = df[['NumWebPurchases', 'NumStorePurchases', 'NumCatalogPurchases']].idxmax(axis=1)
+    df['Channel_Preference'] = df['Channel_Preference'].replace(channels)
 
-    df_average_time_to_delivery = (
-        df.pivot_table(
-            index=feature_col, 
-            columns=target_col, 
-            values='time_to_delivery', 
-            aggfunc='mean'
-        )
-        .add_suffix(f"_{feature_col}_time")
-        .fillna(-1)
-        .reset_index()
-        .round()
-    )
+    # Avg_purchase_Amount
 
-    # Merge it with original dataframe
-    df = df.merge(
-        df_average_time_to_delivery,
-        how='left',
-        on=feature_col
-    )
+    # List of columns representing spending on different product categories
+    product_columns = ['MntWines', 'MntFruits', 'MntMeatProducts', 'MntFishProducts', 'MntSweetProducts', 'MntGoldProds']
 
-    return df
+    # Calculate the total spending for each customer
+    df['Total_Spending'] = df[product_columns].sum(axis=1)
 
+    # List of columns representing the number of purchases in different channels
+    purchase_columns = ['NumWebPurchases', 'NumStorePurchases', 'NumCatalogPurchases']
 
-def calc_feature_performance(_df:pd.DataFrame, target_col:str, feature_col:str)->pd.DataFrame:
-    """
-        Used to calculate the performance for feature_col per each input target_col.
+    # Calculate the total number of purchases for each customer
+    df['Total_Purchases'] = df[purchase_columns].sum(axis=1)
 
-        PARAMETERS
-            _df: pandas dataframe, input dataframe.
-            target_col: str, represent the target to which we calculate the average time.
-            feature_col: str, represent the feature over which we calculate each average time.
+    # Calculate the average purchase amount for each customer
+    df['Average_Purchase_Amount'] = df['Total_Spending'] / df['Total_Purchases']
 
-        RETURN
-            pandas DataFrame with created features.
-    """
+    # Campaign_Engagement
 
-    # Create a copy of input dataframe
-    df = _df.copy()
+    # Based on the EDA analysis in the previous notebook, it was shown that the most used compaing in descending orders are:
+    campaigns = ['AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 'AcceptedCmp1', 'AcceptedCmp2']
 
-    df_property_percent = df.pivot_table(
-        index=feature_col, 
-        columns=target_col, 
-        values='detailed_property_id', 
-        aggfunc='count'
-    ).fillna(0)
+    # Let's assume the weights Importance of each Campaing based on the most used campaign
+    campaign_weights = [0.5, 0.4, 0.3, 0.2, 0.1]
 
-    # Calculate the percentage of each property type per developer
-    df_property_percent['total'] = df_property_percent.sum(axis=1)
+    # Calculate the total campaign engagement for each customer
+    df['Campaign_Engagement'] = (df[campaigns] * campaign_weights).sum(axis=1)
 
-    df_property_percent = (
-        df_property_percent
-        .div(df_property_percent['total'], axis=0)
-        .drop('total', axis=1)
-        .add_suffix(f"_{feature_col}_perecntage")
-        .reset_index()
-    )
+    # Num_Children
+    df['Num_Children'] = df['Kidhome'] + df['Teenhome']
 
-    # Merge it with original dataframe
-    df = df.merge(
-        df_property_percent,
-        how='left',
-        on=[feature_col]
-    )
+    df['Living_With'] = df["Marital_Status"].replace({
+        "Married":"Partner", 
+        "Together":"Partner", 
+        "Absurd":"Alone", 
+        "Widow":"Alone", 
+        "YOLO":"Alone", 
+        "Divorced":"Alone", 
+        "Single":"Alone",})
+
+    df["Education"]= df["Education"].replace({
+        "Basic":"Undergraduate",
+        "2n Cycle":"Undergraduate", 
+        "Graduation":"Graduate", 
+        "Master":"Postgraduate", 
+        "PhD":"Postgraduate"})
+
+    # Family_Size
+    df['Family_Size'] = df['Living_With'].replace({'Alone':1, 'Partner':2}) + df['Num_Children']
 
     return df
 
 
-def calc_feature_market_share(_df:pd.DataFrame, target_col:str, feature_col:str)->pd.DataFrame:
-    """
-        Used to calculate the market share for feature_col per each input target_col.
-
-        PARAMETERS
-            _df: pandas dataframe, input dataframe.
-            target_col: str, represent the target to which we calculate the average time.
-            feature_col: str, represent the feature over which we calculate each average time.
-
-        RETURN
-            pandas DataFrame with created features.
-    """
-
-    # Create a copy of input dataframe
-    df = _df.copy()
-
-    df_property_market_share = (
-       df.pivot_table(
-            index=feature_col, 
-            columns=target_col, 
-            values='detailed_property_id', 
-            aggfunc='count'
-        ).fillna(0)
-        .add_suffix(f"_{feature_col}_market_share")
-    )
-
-    # Calculate the percentage of each property type per developer
-    df_sum = df_property_market_share.sum()
-
-    df_property_market_share = df_property_market_share/df_sum
-
-    # Merge with original dataframe
-    df = df.merge(
-        df_property_market_share.reset_index(),
-        how='left',
-        on=feature_col
-    )
-
-    return df

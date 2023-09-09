@@ -1,9 +1,44 @@
 from scipy import stats
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.model_selection import GridSearchCV
 import pandas as pd
 import numpy as np
-import featureengineering
+import datapreprocessing, featureengineering
+
+
+class preprocessTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        # This method is required for compatibility but usually does nothing in custom transformers
+
+        return self
+
+    def transform(self, X):
+        
+        # Set the output type.
+        self.set_output('pandas')
+
+        transformed_X = datapreprocessing.data_preprocess(X)
+        
+        return transformed_X#, transformed_X.columns.tolist()
+
+    def set_output(self, transform='numpy'):
+        """
+        Set the output type of the transformer.
+
+        Args:
+            transform (str): The output type of the transformer. Supported values are
+            'numpy' and 'pandas'.
+
+        Returns:
+            None.
+        """
+
+        if transform not in ['numpy', 'pandas']:
+            raise ValueError('Invalid output type: {}'.format(transform))
+
+        self._output_type = transform
 
 
 class featureEngTransformer(BaseEstimator, TransformerMixin):
@@ -15,9 +50,110 @@ class featureEngTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
+
+        # Set the output type.
+        self.set_output('pandas')
+
+        print('START FEATURE ENG')
+        
         transformed_X = featureengineering.feature_engineereing(X)
 
+        print('END FEATURE ENG')
+
         return transformed_X
+
+    def set_output(self, transform='numpy'):
+        """
+        Set the output type of the transformer.
+
+        Args:
+            transform (str): The output type of the transformer. Supported values are
+            'numpy' and 'pandas'.
+
+        Returns:
+            None.
+        """
+
+        if transform not in ['numpy', 'pandas']:
+            raise ValueError('Invalid output type: {}'.format(transform))
+
+        self._output_type = transform
+
+
+class updateFeaturesList(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        # Set the output type.
+        self.set_output('pandas')
+
+        cols_to_drop = [
+            'ID',
+            'Kidhome',
+            'Teenhome',
+            'Dt_Customer',
+            'Marital_Status',
+            'Z_CostContact',
+            'Z_Revenue',
+            'Year_Birth',
+            'Total_Accepted_Campaigns',
+            'Total_Spending',
+            'Total_Purchases',
+            'Num_Children',
+            'Acceptance_Rate',
+            'MntMeatProducts',
+            'MntWines']
+
+        transformed_X = X.drop(cols_to_drop, axis=1)
+
+        self.numeric_features = transformed_X.select_dtypes('number').columns.tolist()
+        self.categorical_features = transformed_X.select_dtypes('object').columns.tolist()
+        
+        return transformed_X
+
+    def set_output(self, transform='numpy'):
+        """
+        Set the output type of the transformer.
+
+        Args:
+            transform (str): The output type of the transformer. Supported values are
+            'numpy' and 'pandas'.
+
+        Returns:
+            None.
+        """
+
+        if transform not in ['numpy', 'pandas']:
+            raise ValueError('Invalid output type: {}'.format(transform))
+
+        self._output_type = transform
+
+
+class selectNumericTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return X.select_dtypes('number')
+
+
+class selectCategoricalTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return X.select_dtypes('object')
+
 
 
 class SkewnessTransformer(BaseEstimator, TransformerMixin):
@@ -130,28 +266,4 @@ class SkewnessTransformer(BaseEstimator, TransformerMixin):
             else:
                 return 'No Fix'
             
-
-class GridSearchModel(BaseEstimator, TransformerMixin):
-    def __init__(self, alg, grid_params= None):
-        self.alg= alg
-        self.param_grid = grid_params
-        self.grid_search = None
-        self.best_estimator_ = None
-
-    def fit(self, X, y= None):
-        self.grid_search = GridSearchCV(estimator=self.alg, param_grid=self.param_grid, cv=3)
-        self.grid_search.fit(X, y)
-
-        self.best_estimator_ = self.grid_search.best_estimator_
-
-        return self
-    
-    def transform(self, X):
-        return X
-    
-    def predict(self, X):
-        return self.best_estimator_.predict(X)
-
-    def predict_proba(self, X):
-        return self.best_estimator_.predict_proba(X)
     
