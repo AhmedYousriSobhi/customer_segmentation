@@ -1,0 +1,4 @@
+feature1,feature2,correlation,abs_correlation
+Acceptance_Rate,Campaign_Engagement,0.9642575615644435,0.9642575615644435
+MntMeatProducts,Average_Purchase_Amount,0.8358883037827625,0.8358883037827625
+MntWines,Average_Purchase_Amount,0.8272398754212489,0.8272398754212489
