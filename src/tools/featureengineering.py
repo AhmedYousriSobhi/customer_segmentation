@@ -84,9 +84,6 @@ def feature_engineereing(_df:pd.DataFrame)->pd.DataFrame:
     # Calculate the total number of purchases for each customer
     df['Total_Purchases'] = df[purchase_columns].sum(axis=1)
 
-    # Calculate the average purchase amount for each customer
-    df['Average_Purchase_Amount'] = df['Total_Spending'] / df['Total_Purchases']
-
     # Campaign_Engagement
 
     # Based on the EDA analysis in the previous notebook, it was shown that the most used compaing in descending orders are:

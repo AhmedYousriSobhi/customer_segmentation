@@ -53,12 +53,8 @@ class featureEngTransformer(BaseEstimator, TransformerMixin):
 
         # Set the output type.
         self.set_output('pandas')
-
-        print('START FEATURE ENG')
         
         transformed_X = featureengineering.feature_engineereing(X)
-
-        print('END FEATURE ENG')
 
         return transformed_X
 
@@ -101,12 +97,16 @@ class updateFeaturesList(BaseEstimator, TransformerMixin):
             'Z_Revenue',
             'Year_Birth',
             'Total_Accepted_Campaigns',
+            'AcceptedCmp1',
+            'AcceptedCmp2',
+            'AcceptedCmp3',
+            'AcceptedCmp4',
+            'AcceptedCmp5',
+            'Campaign_Engagement',
             'Total_Spending',
             'Total_Purchases',
             'Num_Children',
-            'Acceptance_Rate',
-            'MntMeatProducts',
-            'MntWines']
+            ]
 
         transformed_X = X.drop(cols_to_drop, axis=1)
 
@@ -131,29 +131,6 @@ class updateFeaturesList(BaseEstimator, TransformerMixin):
             raise ValueError('Invalid output type: {}'.format(transform))
 
         self._output_type = transform
-
-
-class selectNumericTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        pass
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        return X.select_dtypes('number')
-
-
-class selectCategoricalTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        pass
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        return X.select_dtypes('object')
-
 
 
 class SkewnessTransformer(BaseEstimator, TransformerMixin):
