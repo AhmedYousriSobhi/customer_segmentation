@@ -14,6 +14,8 @@
   - [Project Structure](#project-structure)
   - [Setup Environment](#setup-environment)
   - [Dataset Schema](#dataset-schema)
+  - [Dataset Info](#dataset-info)
+  - [Project Flow](#project-flow)
   - [Analysis Report](#analysis-report)
 
 ## Objective
@@ -22,47 +24,50 @@ Our goal is to use data insights to better understand our customers. By analyzin
 ## Project Structure
 ```bash
 .
+├── cluster                # Clustering Model Notebook
 ├── data                   # Dataset files
 |   ├── raw
 |   ├── intermid
 |   ├── output
 ├── nb_workspace           # Jupiter notebooks
 ├── docs                   # Documentation files which includes analysis report
+|   ├── model              # Exported trained models
+├── nb_workspace           # Jupiter notebooks
 ├── report                 # Reports files
+|   ├── analysis_report    # Analysis report
 |   ├── plots              # Figures files
 |   ├── reports            # Reports HTML files
 ├── src                    # Source scripts files
 |   ├── env                # Script file to create project directory environment
-|   ├── model              # Exported trained models
+|   ├── tools              # Script files used for model pipeline
+
 └── README.md
 ```
 
 ## Setup Environment
-Go inside the project directory
+Navigate to the project directory:
 
 ```bash
 cd project_directory
 ```
 
-Install Required Libararies and packages.
+Create a virtual environment (optional but recommended):
+```bash
+python -m venv venv
+```
+
+Install the project dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-In case of initial setup, create required folders directory using environment script
-
+In case of initial setup, create required folders directory using environment script:
 ```bash
 python ./src/env/setup_env.py
 ```
 
 ## Dataset Schema
-This dataset are divided into 4 categories:
-- Customer's Information: [ID, Year_Birth, Education, Marital_status, Income, Kidhome, Teenhome, DT_Customer, Recency, Complain]
-- Products: [MntWines, MntFruits, MntMeatProducts, MntFishProducts, mnSweetProducts, MntGoldProds]
-- Promotion: [NumDealsPurchases, AcceptedCmp1, AcceptedCmp2, AcceptedCmp3, AcceptedCmp4, AcceptedCmp5, Response]
-- Place: [NumWebPurchases, NumCatalogPurchases, NumStorePurchases, NumWebVisitsMonth]
-
 |Feature|Description|Type|
 |--|--|--|
 |'ID'| Customer’s unique identifier | int64|
@@ -95,6 +100,26 @@ This dataset are divided into 4 categories:
 |'Z_Revenue'| Revenue associated with contacting the customer| int64|
 |'Response|  Customer's response to the company's offer| int64|
 
+## Dataset Info
+This dataset are divided into 4 categories:
+- Customer's Information: [ID, Year_Birth, Education, Marital_status, Income, Kidhome, Teenhome, DT_Customer, Recency, Complain]
+- Products: [MntWines, MntFruits, MntMeatProducts, MntFishProducts, mnSweetProducts, MntGoldProds]
+- Promotion: [NumDealsPurchases, AcceptedCmp1, AcceptedCmp2, AcceptedCmp3, AcceptedCmp4, AcceptedCmp5, Response]
+- Place: [NumWebPurchases, NumCatalogPurchases, NumStorePurchases, NumWebVisitsMonth]
+
+## Project Flow
+The projects is splitted into two parts, where:
+
+__Dataset Exploring__:
+- The first part describes all the preprocessing, exploarity data analysis (EDA), and features engineering the dataset has gone through.
+- Locatted at: nb_workspace/
+
+__Customers Segmentation__:
+- The second part describes the pipeline which the raw dataset is passed through, to the output of customers clusters, passing through all the preprocessing process [Data Cleaning and feature engineering].
+- Located at: cluster/customer_segmentation.ipynb
+
+All Steps and Code are documented and commented in the notebooks, so any contributor would simply go through the steps made.
+
 ## Analysis Report
-Included inside directory -> docs/analysis_report.pdf
+Included inside directory -> report/analysis_report/analysis_report.pdf
 
