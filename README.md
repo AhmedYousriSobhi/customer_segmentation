@@ -1,4 +1,6 @@
 # Customer Segmentation and Marketing Strategy Optimization: A Data-Driven Approach
+![image](https://github.com/AhmedYousriSobhi/customer_segmentation/assets/66730765/3cabfabd-51dd-43a7-977f-a5dfb6810989)
+
 
 | Info | Description |
 |:-----:|:----------:|
