@@ -125,3 +125,9 @@ All Steps and Code are documented and commented in the notebooks, so any contrib
 ## Analysis Report
 Included inside directory -> report/analysis_report/analysis_report.pdf
 
+
+## License
+
+The code, notebooks and reports in this repository are licensed under the [MIT License](LICENSE).
+
+The datasets in `data/` are not covered by this license. They remain with their original owners.
